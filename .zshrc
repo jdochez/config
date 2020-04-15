@@ -258,3 +258,8 @@ alias catz='fzf | xargs cat'
 # Configuration git repo
 #
 alias config='/usr/bin/git --git-dir=$HOME/src/config/ --work-tree=$HOME'
+if [ $OS_NAME = "linux" ]
+then 
+	echo Welcome to gLinux `whoami`
+	 alias linux_config='/usr/bin/git --git-dir=$HOME/src/linux_cfg/ --work-tree=$HOME'
+fi
