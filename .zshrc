@@ -1,8 +1,10 @@
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:$PATH
+export OS_NAME=`uname | tr "[:upper:]" "[:lower:]"`
+export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/$OS_NAME
+export PATH=$HOME/bin:$JAVA_HOME/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/jedo/.oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -68,7 +70,7 @@ DISABLE_MAGIC_FUNCTIONS=true
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(z git colored-man-pages per-directory-history gradle repo colorize zsh-autosuggestions)
+plugins=(git colored-man-pages per-directory-history gradle repo colorize zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -103,7 +105,15 @@ prompt_context() {
   fi
 }
 
-source /Users/jedo/tools/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+export GDK_SCALE=2
+export GDK_DPI_SCALE=0.5
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+
+#
+# F Z F Options
+#
+export FZF_DEFAULT_OPTS="--height=40% --preview='cat {}' --preview-window=right:60%:wrap"
+source /usr/share/doc/fzf/examples/completion.zsh
 
 #
 # G E N E R A L related functions
@@ -153,7 +163,7 @@ function debug_databinding_test {
 }
 
 function grd {
-	gradle --no-daemon -Dorg.gradle.debug=true $*
+	gradle $* --debug-jvm
 }
 
 function go_to_test {
@@ -230,8 +240,7 @@ function rebase_from {
 	fi
 	current_branch=`git rev-parse --abbrev-ref HEAD`
 	echo "rebasing branch $current_branch from $1 ?"
-	vared REPLY
-  echo "answered $REPLY"
+	read REPLY
 	case "$REPLY" in
 		y)
 		git rebase --onto $1 HEAD^
@@ -241,6 +250,8 @@ function rebase_from {
 
 alias gs='git status'
 alias gr='gradle'
+alias batz='fzf | xargs bat'
+alias catz='fzf | xargs cat'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 #
