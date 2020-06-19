@@ -140,6 +140,17 @@ function debug_build_test {
 	$WS_ROOT/tools/gradlew --no-daemon -Dorg.gradle.debug=true $*
 }
 
+function clean_up_ssd {
+       rm -rf $WS_ROOT/out/build/base/build-system/integration-test/application/build/GRADLE_USER_HOME
+}
+
+#
+# Restart bunch of deamons that get confused on Sleep/Wake
+# 
+function refresh {
+       pulseaudio --kill
+}
+
 #
 # G R A D L E related functions
 #
