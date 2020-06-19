@@ -1,6 +1,11 @@
 # If you come from bash you might have to change your $PATH.
 export OS_NAME=`uname | tr "[:upper:]" "[:lower:]"`
-export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/$OS_NAME
+if [ $OS_NAME = "darwin" ]
+then
+	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/mac/Contents/Home
+else
+	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/$OS_NAME
+fi
 export PATH=$HOME/bin:$JAVA_HOME/bin:$PATH
 
 # Path to your oh-my-zsh installation.
@@ -52,7 +57,7 @@ DISABLE_MAGIC_FUNCTIONS=true
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
 # much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 # Uncomment the following line if you want to change the command execution time
 # stamp shown in the history command output.
@@ -113,7 +118,12 @@ export QT_AUTO_SCREEN_SCALE_FACTOR=1
 # F Z F Options
 #
 export FZF_DEFAULT_OPTS="--height=40% --preview='cat {}' --preview-window=right:60%:wrap"
-source /usr/share/doc/fzf/examples/completion.zsh
+if [ $OS_NAME = "linux" ]
+then
+	source /usr/share/doc/fzf/examples/completion.zsh
+else
+	[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+fi
 
 #
 # G E N E R A L related functions
@@ -203,7 +213,7 @@ function bazel_unit_tests {
 
 function ws {
 	if [ $# -eq 0 ]
-  then
+    then
 		workspace="studio-master-dev"
 	else
 		workspace=$1
@@ -248,6 +258,18 @@ function rebase_from {
 	esac
 }
 
+function prepare_api_release {
+	export ANDROID_SDK_ROOT=/usr/local/google/home/jedo/src/studio-4.1-dev/prebuilts/studio/sdk/linux
+	find $WS_ROOT/out/apiTests -name "build" | grep -v src | xargs rm -rf 
+	find ~/src/gradle-recipes -name "build.gradle.kts" | grep buildSrc | xargs sed -i '4,8d'
+	pushd $WS_ROOT/out/apiTests
+	find . -maxdepth 2 -mindepth 2 -type d -exec $HOME/bin/build_api_test.sh {} \; 
+	find . -name ".gradle" | xargs rm -rf 
+	popd
+	cp -r $WS_ROOT/out/apiTests/* ~/src/gradle-recipes
+
+}
+
 alias gs='git status'
 alias gr='gradle'
 alias batz='fzf | xargs bat'
@@ -261,5 +283,5 @@ alias config='/usr/bin/git --git-dir=$HOME/src/config/ --work-tree=$HOME'
 if [ $OS_NAME = "linux" ]
 then 
 	echo Welcome to gLinux `whoami`
-	 alias linux_config='/usr/bin/git --git-dir=$HOME/src/linux_cfg/ --work-tree=$HOME'
+	alias linux_config='/usr/bin/git --git-dir=$HOME/src/linux_cfg/ --work-tree=$HOME'
 fi
