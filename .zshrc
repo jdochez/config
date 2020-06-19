@@ -57,7 +57,7 @@ DISABLE_MAGIC_FUNCTIONS=true
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
 # much, much faster.
-DISABLE_UNTRACKED_FILES_DIRTY="true"
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 # Uncomment the following line if you want to change the command execution time
 # stamp shown in the history command output.
@@ -177,8 +177,8 @@ function grd {
 }
 
 function go_to_test {
-  if [ $# -eq 0 ]
-  then
+ 	if [ $# -eq 0 ]
+	then
 	  cd $WS_ROOT/out/build/base/build-system/integration-test/application/build/tests
 	else
 	  cd $WS_ROOT/out/build/base/build\-system/integration-test/application/build/tests/$1
@@ -213,7 +213,7 @@ function bazel_unit_tests {
 
 function ws {
 	if [ $# -eq 0 ]
-    then
+ 	then
 		workspace="studio-master-dev"
 	else
 		workspace=$1
@@ -222,7 +222,7 @@ function ws {
 	export WS_ROOT=$HOME/src/$workspace
 	export CUSTOM_REPO=$HOME/src/$workspace/out/repo:$HOME/src/$workspace/prebuilts/tools/common/m2/repository
 	export STUDIO_CUSTOM_REPO=$HOME/src/$workspace/out/repo
-	export ANDROID_HOME=$WS_ROOT/prebuilts/studio/sdk/darwin
+	export ANDROID_HOME=$WS_ROOT/prebuilts/studio/sdk/$OS_NAME
 	export ANDROID_NDK_HOME=$ANDROID_HOME/ndk-bundle
 	echo "CUSTOM_REPO and STUDIO_CUSTOM_REPO set to $CUSTOM_REPO"
 	rm ~/bin/bazel
@@ -260,14 +260,14 @@ function rebase_from {
 
 function prepare_api_release {
 	export ANDROID_SDK_ROOT=/usr/local/google/home/jedo/src/studio-4.1-dev/prebuilts/studio/sdk/linux
-	find $WS_ROOT/out/apiTests -name "build" | grep -v src | xargs rm -rf 
-	find ~/src/gradle-recipes -name "build.gradle.kts" | grep buildSrc | xargs sed -i '4,8d'
-	pushd $WS_ROOT/out/apiTests
-	find . -maxdepth 2 -mindepth 2 -type d -exec $HOME/bin/build_api_test.sh {} \; 
+	pushd  $WS_ROOT/out/apiTests
+	find . -name "build" | grep -v src | xargs rm -rf
+	find . -name "build.gradle.kts" | grep buildSrc | xargs sed -i '4,8d'
+	find . -maxdepth 2 -mindepth 2 -type d | xargs -I{} sh -c 'pushd {}; $WS_ROOT/tools/gradlew -Dorg.gradle.jvmargs=-Xmx2G assDeb ; popd'
+	find . -name "build" | grep -v src | xargs rm -rf
 	find . -name ".gradle" | xargs rm -rf 
 	popd
 	cp -r $WS_ROOT/out/apiTests/* ~/src/gradle-recipes
-
 }
 
 alias gs='git status'
