@@ -2,9 +2,9 @@
 export OS_NAME=`uname | tr "[:upper:]" "[:lower:]"`
 if [ $OS_NAME = "darwin" ]
 then
-	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/mac/Contents/Home
+	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/jdk11/mac/Contents/Home
 else
-	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/$OS_NAME
+	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/jdk11/$OS_NAME
 fi
 export PATH=$HOME/bin:$JAVA_HOME/bin:$PATH
 
@@ -75,7 +75,7 @@ DISABLE_MAGIC_FUNCTIONS=true
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man-pages per-directory-history gradle repo colorize zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git colored-man-pages gradle repo colorize zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -129,7 +129,12 @@ fi
 # G E N E R A L related functions
 #
 function notify-send {
+if [ $OS_NAME = "Darwin" ]
+then
   osascript -e 'display notification "Command Finished" with title "Terminal"'
+else 
+  /usr/bin/notify-send $*
+fi
 }
 
 function build_test {
@@ -148,7 +153,7 @@ function clean_up_ssd {
 # Restart bunch of deamons that get confused on Sleep/Wake
 # 
 function refresh {
-       pulseaudio --kill
+       picom -b
 }
 
 #
@@ -184,7 +189,7 @@ function debug_databinding_test {
 }
 
 function grd {
-	gradle $* --debug-jvm
+	gradle -Dorg.gradle.debug=true $* 
 }
 
 function go_to_test {
@@ -194,6 +199,14 @@ function go_to_test {
 	else
 	  cd $WS_ROOT/out/build/base/build\-system/integration-test/application/build/tests/$1
 	fi
+}
+
+function gct { 
+	gradle :base:build-system:gradle-core:test
+}
+
+function gat {
+	gradle :base:gradle-api:test
 }
 
 #
@@ -238,6 +251,8 @@ function ws {
 	echo "CUSTOM_REPO and STUDIO_CUSTOM_REPO set to $CUSTOM_REPO"
 	rm ~/bin/bazel
 	ln -s $HOME/src/$workspace/tools/base/bazel/bazel ~/bin/bazel
+	rm ~/bin/adb
+	ln -s $HOME/src/$workspace/prebuilts/studio/sdk/$OS_NAME/platform-tools/adb ~/bin/adb
   chmod a+x ~/bin/bazel
 }
 
@@ -270,7 +285,7 @@ function rebase_from {
 }
 
 function prepare_api_release {
-	export ANDROID_SDK_ROOT=/usr/local/google/home/jedo/src/studio-4.1-dev/prebuilts/studio/sdk/linux
+	export ANDROID_SDK_ROOT=/usr/local/google/home/jedo/src/studio-4.2-dev/prebuilts/studio/sdk/linux
 	pushd  $WS_ROOT/out/apiTests
 	find . -name "build" | grep -v src | xargs rm -rf
 	find . -name "build.gradle.kts" | grep buildSrc | xargs sed -i '4,8d'
