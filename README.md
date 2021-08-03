@@ -1,18 +1,18 @@
-# config
-.dotfiles
+# linux
+.dotfiles for linux 
 
 # to checkout on a new system
 
-alias config='/usr/bin/git --git-dir=$HOME/src/config/ --work-tree=$HOME'
+alias linux_config='/usr/bin/git --git-dir=$HOME/src/linux_config/ --work-tree=$HOME'
 
-git clone --bare https://github.com/jdochez/config.git $HOME/src/config
+git clone --bare https://github.com/jdochez/linux.git $HOME/src/linux_config
 
-config config --local status.showUntrackedFiles no
+linux_config config --local status.showUntrackedFiles no 
 
 # to push changes
 
-config add
+linux_config add <files>
+  
+linux_config commit -m "new version..."
 
-config commit -m "new version..."
-
-config push --set-upstream origin master
+linux_config push --set-upstream origin master

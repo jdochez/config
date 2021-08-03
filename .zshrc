@@ -2,9 +2,9 @@
 export OS_NAME=`uname | tr "[:upper:]" "[:lower:]"`
 if [ $OS_NAME = "darwin" ]
 then
-	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/jdk11/mac/Contents/Home
+	export JAVA_HOME=$HOME/src/studio-main/prebuilts/studio/jdk/jdk11/mac/Contents/Home
 else
-	export JAVA_HOME=$HOME/src/studio-master-dev/prebuilts/studio/jdk/jdk11/$OS_NAME
+	export JAVA_HOME=$HOME/src/studio-main/prebuilts/studio/jdk/jdk11/$OS_NAME
 fi
 export PATH=$HOME/bin:$JAVA_HOME/bin:$PATH
 
@@ -70,12 +70,12 @@ DISABLE_MAGIC_FUNCTIONS=true
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-# Which plugins would you like to load?
+# Which plugins would you like to load?ins
 # Standard plugins can be found in ~/.oh-my-zsh/plugins/*
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git colored-man-pages gradle repo colorize zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(git colored-man-pages gradle repo colorize zsh-autosuggestions zsh-syntax-highlighting bgnotify)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -110,8 +110,8 @@ prompt_context() {
   fi
 }
 
-export GDK_SCALE=2
-export GDK_DPI_SCALE=0.5
+export GDK_SCALE=1
+export GDK_DPI_SCALE=1
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
 #
@@ -146,7 +146,9 @@ function debug_build_test {
 }
 
 function clean_up_ssd {
-       rm -rf $WS_ROOT/out/build/base/build-system/integration-test/application/build/GRADLE_USER_HOME
+    rm -rf $WS_ROOT/out/build/base/build-system/integration-test/application/build/GRADLE_USER_HOME
+    rm -rf $WS_ROOT/out/build/base/build-system/integration-test/native/build/GRADLE_USER_HOME
+
 }
 
 #
@@ -162,7 +164,8 @@ function refresh {
 
 function integ_tests {
 	gradle :base:build-system:integration-test:application:test
-  notify-send "Gradle integration tests finished"
+	clean_up_ssd
+  	notify-send "Gradle integration tests finished"
 }
 
 function integ_test {
@@ -176,7 +179,7 @@ function debug_integ_test {
 
 function databinding_test {
 	echo testing $argv
-	gr :base:build-system:integration-test:databinding:test --tests $*
+	gradle :base:build-system:integration-test:databinding:test --tests $*
 }
 
 function databinding_tests {
@@ -186,6 +189,12 @@ function databinding_tests {
 function debug_databinding_test {
 	echo testing $argv
 	gradle :base:build-system:integration-test:databinding:test --tests $* --debug-jvm
+}
+
+function native_tests {
+	gradle :base:build-system:integration-test:native:test
+	clean_up_ssd
+  	notify-send "Gradle Native integration tests finished"
 }
 
 function grd {
@@ -238,7 +247,7 @@ function bazel_unit_tests {
 function ws {
 	if [ $# -eq 0 ]
  	then
-		workspace="studio-master-dev"
+		workspace="studio-main"
 	else
 		workspace=$1
 	fi
@@ -253,7 +262,7 @@ function ws {
 	ln -s $HOME/src/$workspace/tools/base/bazel/bazel ~/bin/bazel
 	rm ~/bin/adb
 	ln -s $HOME/src/$workspace/prebuilts/studio/sdk/$OS_NAME/platform-tools/adb ~/bin/adb
-  chmod a+x ~/bin/bazel
+	chmod a+x ~/bin/bazel
 }
 
 function create_branch {
@@ -285,7 +294,6 @@ function rebase_from {
 }
 
 function prepare_api_release {
-	export ANDROID_SDK_ROOT=/usr/local/google/home/jedo/src/studio-4.2-dev/prebuilts/studio/sdk/linux
 	pushd  $WS_ROOT/out/apiTests
 	find . -name "build" | grep -v src | xargs rm -rf
 	find . -name "build.gradle.kts" | grep buildSrc | xargs sed -i '4,8d'
@@ -296,10 +304,12 @@ function prepare_api_release {
 	cp -r $WS_ROOT/out/apiTests/* ~/src/gradle-recipes
 }
 
+alias weather='curl wttr.in/Portland\?m'
 alias gs='git status'
 alias gr='gradle'
 alias batz='fzf | xargs bat'
 alias catz='fzf | xargs cat'
+alias br="google-chrome"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 #
@@ -310,4 +320,8 @@ if [ $OS_NAME = "linux" ]
 then 
 	echo Welcome to gLinux `whoami`
 	alias linux_config='/usr/bin/git --git-dir=$HOME/src/linux_cfg/ --work-tree=$HOME'
+
+	function setzoom() {
+		 gsettings set org.gnome.desktop.interface text-scaling-factor "$@";
+	}
 fi
